@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
 typedef struct T6
 {
@@ -11,14 +9,33 @@ typedef struct T6
   float fVal, fVol; // additional data, like ask-bid spread, volume etc.
 } T6;
 
-#define ATOI1(c) (c-'0')
+/* borrowed from Reactos https://doxygen.reactos.org/df/d85/variant_8c_source.html */
+/* pointed by http://stackoverflow.com/questions/22476192/how-is-variant-time-date-double-8-byte-handled */
+double SystemTimeToVariantTimeMs(
+    const unsigned short year, 
+    const unsigned short month, 
+    const unsigned short day, 
+    const unsigned short hour, 
+    const unsigned short min, 
+    const unsigned short sec, 
+    const unsigned int   msec)
+{
+    int m12 = (month - 14) / 12;
+    double dateVal = 
+        /* Convert Day/Month/Year to a Julian date - from PostgreSQL */
+        (1461 * (year + 4800 + m12)) / 4 + (367 * (month - 2 - 12 * m12)) / 12 -
+        (3 * ((year + 4900 + m12) / 100)) / 4 + day - 32075
+        -1757585 /* Convert to + days from 1 Jan 100 AD */
+        -657434; /* Convert to +/- days from 1 Jan 1899 AD */
+    double dateSign = (dateVal < 0.0) ? -1.0 : 1.0;
+    dateVal += dateSign * (msec + sec*1000 + min*60000 + hour*3600000) / 86400000.0;
+    return dateVal;
+}
 
 int main(int argc, char **argv)
 {
     FILE *fr, *fw;
     char L[255];
-    tm Time;
-    int MSec;
     double T;
     
     if(argc < 3) {
@@ -40,20 +57,27 @@ int main(int argc, char **argv)
     printf("hello world from %s %s\n", argv[0], argv[1]);
     while( fgets(L, sizeof(L)-1, fr)!=NULL )
     {
-        // EUR/USD,20160601 00:00:00.133,1.11341,1.11343
-        //         8   1214 17 20 23 26
-        //char s[12];
-        memset(&Time, 0, sizeof(Time));
-        Time.tm_year = 1000*ATOI1(L[8])  + 100*ATOI1(L[9]) + 10*ATOI1(L[10]) + 1*ATOI1(L[11]); 
-        Time.tm_mon  =   10*ATOI1(L[12]) +   1*ATOI1(L[13]) - 1; /* Months *since* january: 0-11 */
-        Time.tm_mday =   10*ATOI1(L[14]) +   1*ATOI1(L[15]); 
-        Time.tm_hour =   10*ATOI1(L[17]) +   1*ATOI1(L[18]); 
-        Time.tm_min  =   10*ATOI1(L[20]) +   1*ATOI1(L[21]); 
-        Time.tm_sec  =   10*ATOI1(L[23]) +   1*ATOI1(L[24]); 
-             MSec    =  100*ATOI1(L[26]) +  10*ATOI1(L[27]) + 1*ATOI1(L[28]); 
-        T = mktime(&Time);// + (MSec/1000)/24/3600;     
-        printf("Year=%d Month=%d Day=%d Hour=%d Min=%d Sek=%d\n T=%f", 
-            Time.tm_year, Time.tm_mon, Time.tm_mday, Time.tm_hour, Time.tm_min, Time.tm_sec, T);
+        int i;
+        // EUR/USD,20160506 20:49:59.937,1.14023,1.14033
+        //         8   1214 17 20 23 26  30
+        for (i = 8; i <= 28; i++) {
+            L[i] -= '0'; /* prepare to convert to integers */
+        }
+        for (i = 30; (L[i] != '\0') && (L[i] != ','); i++) { 
+            /* scroll to comma between bid and ask */ 
+        }
+        L[i] = '\0'; /* make bid to a string in itself */
+        double Bid = atof(&L[30]);
+        double Ask = atof(&L[i+1]);
+        T = SystemTimeToVariantTimeMs(
+            /* year  */ 1000*L[8]  + 100*L[9] +  10*L[10] + L[11],
+            /* month */                          10*L[12] + L[13],
+            /* day   */                          10*L[14] + L[15],
+            /* hour  */                          10*L[17] + L[18], 
+            /* min   */                          10*L[20] + L[21], 
+            /* sec   */                          10*L[23] + L[24], 
+            /* msec  */              100*L[26] + 10*L[27] + L[28]);
+        printf("Datetime=%f Bid=%f Ask=%f\n", T, Bid, Ask); // 42496.868055 for the above example
         break;
     }
 
