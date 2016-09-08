@@ -1,5 +1,9 @@
+#define NTICKS 20
+
 #include <stdio.h>
 #include <stdlib.h>
+#define min(X, Y)  ((X) < (Y) ? (X) : (Y))
+#define max(X, Y)  ((X) > (Y) ? (X) : (Y))
 
 typedef struct T6
 {
@@ -35,8 +39,19 @@ double SystemTimeToVariantTimeMs(
 int main(int argc, char **argv)
 {
     FILE *fr, *fw;
-    char L[255];
+    char L[64];
     double T;
+    double prevT = 0.0;
+    int N = 0;
+    T6 Bar;
+    
+    #define FLUSHBAR() {               \
+      Bar.fVol /= N;                   \
+      fwrite(&Bar, sizeof(T6), sizeof(Bar), fw); \
+      N = 0;                           \
+      printf("Time=%f O=%f H=%f L=%f C=%f Val=%f Vol=%f\n", \
+        Bar.time, Bar.fOpen, Bar.fHigh, Bar.fLow, Bar.fClose, Bar.fVal, Bar.fVol); \
+      }
     
     if(argc < 3) {
         fprintf(stderr, "Usage : %s TRUEFX-CSV-INPUT ZORRO-T6-OUTPUT\n\
@@ -54,10 +69,11 @@ int main(int argc, char **argv)
         return(-3);
     }
 
-    printf("hello world from %s %s\n", argv[0], argv[1]);
     while( fgets(L, sizeof(L)-1, fr)!=NULL )
     {
         int i;
+        
+        /* read and decode one csv line */
         // EUR/USD,20160506 20:49:59.937,1.14023,1.14033
         //         8   1214 17 20 23 26  30
         for (i = 8; i <= 28; i++) {
@@ -66,7 +82,7 @@ int main(int argc, char **argv)
         for (i = 30; (L[i] != '\0') && (L[i] != ','); i++) { 
             /* scroll to comma between bid and ask */ 
         }
-        L[i] = '\0'; /* make bid to a string in itself */
+        L[i] = '\0'; /* make bid to an own string by putting null at the end */
         double Bid = atof(&L[30]);
         double Ask = atof(&L[i+1]);
         T = SystemTimeToVariantTimeMs(
@@ -77,8 +93,35 @@ int main(int argc, char **argv)
             /* min   */                          10*L[20] + L[21], 
             /* sec   */                          10*L[23] + L[24], 
             /* msec  */              100*L[26] + 10*L[27] + L[28]);
-        printf("Datetime=%f Bid=%f Ask=%f\n", T, Bid, Ask); // 42496.868055 for the above example
-        break;
+        printf("Datetime=%f Bid=%f Ask=%f\n", T, Bid, Ask); // 42496.868055 
+        
+        /* start new bar after any big time gap - weekend or even an hour */
+        if ((T-prevT>1.0/24.0) && (N>0) && (prevT>0)) {
+            FLUSHBAR();
+        }
+        prevT = T;
+        
+        /* aggregation */
+        if (++N == 1) {
+            Bar.time = T;
+            Bar.fVol = 1;
+            Bar.fVal = (Ask - Bid);
+            Bar.fOpen = Bar.fHigh = Bar.fLow = Bar.fClose = Bid; 
+        } else {
+            Bar.fVol += 1;
+            Bar.fVal += (Ask - Bid);
+            Bar.fClose = Bid;
+            Bar.fHigh = max(Bar.fHigh, Bid);
+            Bar.fLow  = min(Bar.fLow,  Bid);
+        }
+        
+        /* reached number of ticks, write the bar to output file*/
+        if (N>=NTICKS) {
+            FLUSHBAR();
+        }
+    }
+    if (N>0) {
+        FLUSHBAR();
     }
 
     fclose(fw);
