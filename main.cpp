@@ -1,4 +1,4 @@
-#define NTICKS 20
+#define NTICKS 1000
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +38,8 @@ double SystemTimeToVariantTimeMs(
 
 int main(int argc, char **argv)
 {
-    FILE *fr, *fw;
+    FILE *fr;
+    FILE *fw;
     char L[64];
     double T;
     double prevT = 0.0;
@@ -46,12 +47,12 @@ int main(int argc, char **argv)
     T6 Bar;
     
     #define FLUSHBAR() {               \
-      Bar.fVol /= N;                   \
-      fwrite(&Bar, sizeof(T6), sizeof(Bar), fw); \
+      Bar.fVal /= N;                   \
+      fwrite(&Bar, sizeof(T6), 1, fw); \
       N = 0;                           \
-      printf("Time=%f O=%f H=%f L=%f C=%f Val=%f Vol=%f\n", \
-        Bar.time, Bar.fOpen, Bar.fHigh, Bar.fLow, Bar.fClose, Bar.fVal, Bar.fVol); \
-      }
+    }
+      //printf("Time=%f O=%f H=%f L=%f C=%f Val=%f Vol=%f\n", 
+      //  Bar.time, Bar.fOpen, Bar.fHigh, Bar.fLow, Bar.fClose, Bar.fVal, Bar.fVol); 
     
     if(argc < 3) {
         fprintf(stderr, "Usage : %s TRUEFX-CSV-INPUT ZORRO-T6-OUTPUT\n\
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error opening input file %s\n", argv[1]);
         return(-2);
     }
-    fw = fopen(argv[2], "w");
+    fw = fopen(argv[2], "wb");
     if(NULL == fr) {
         fprintf(stderr, "Error opening output file %s\n", argv[2]);
         return(-3);
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
             /* min   */                          10*L[20] + L[21], 
             /* sec   */                          10*L[23] + L[24], 
             /* msec  */              100*L[26] + 10*L[27] + L[28]);
-        printf("Datetime=%f Bid=%f Ask=%f\n", T, Bid, Ask); // 42496.868055 
+        //printf("Datetime=%f Bid=%f Ask=%f\n", T, Bid, Ask); // 42496.868055 
         
         /* start new bar after any big time gap - weekend or even an hour */
         if ((T-prevT>1.0/24.0) && (N>0) && (prevT>0)) {
