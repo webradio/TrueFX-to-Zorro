@@ -36,6 +36,14 @@ double SystemTimeToVariantTimeMs(
     return dateVal;
 }
 
+/* Parse ticks in the CSV file. If wr==false, count created bars and write  */
+/* to pNumbars. If wr==true, parse ticks and this time write bars to the    */
+/* output file in reverse order, knowing total number from pNumbars         */
+void parsecsv(bool wr, int *pNumbars, FILE *fr, FILE *fw)
+{
+	
+}
+
 int main(int argc, char **argv)
 {
     FILE *fr;
@@ -59,12 +67,12 @@ int main(int argc, char **argv)
         E.g. %s EURUSD-2016-05.csv EURUSD-2016-t1000.t6\n", argv[0], argv[0]);
         return(-1);
     }
-    fr = fopen(argv[1], "r");
+    fr = fopen(argv[1], "r"); //read as text
     if(NULL == fr) {
         fprintf(stderr, "Error opening input file %s\n", argv[1]);
         return(-2);
     }
-    fw = fopen(argv[2], "wb");
+    fw = fopen(argv[2], "wb"); //write as binary
     if(NULL == fr) {
         fprintf(stderr, "Error opening output file %s\n", argv[2]);
         return(-3);

@@ -22,7 +22,7 @@ EUR/USD,20160502 00:00:01.078,1.14599,1.14605
 } T6;`
 
 ## Aggregation
-Each bar contains predefined number of ticks, like 1000. Time increment is irregular then. Cut also for weekends, holidays.
+Each bar contains predefined number of ticks, like 1000. Time increment is irregular then. Begin a fresh bar also after weekends, holidays.
 
 ###### Spread Increase Before Weekend
 USD/JPY,20160506 20:59:56.266,107.089996,107.166  
@@ -34,11 +34,12 @@ USD/JPY,20160506 20:59:59.203,**106.978996,107.273003**
 USD/JPY,20160506 20:59:59.437,**106.917999,107.488998**  
 USD/JPY,20160509 00:00:00.026,107.359001,107.366997  
 USD/JPY,20160509 00:00:00.140,107.359001,107.366997  
-![blah](./doc/img/PlotCurve_USDJPY.png)
+![Zorro Chart Viewer with N-tick chart](./doc/img/PlotCurve_USDJPY.png)
 
 ## Example conversion
 [ZHistoryEdit.exe](http://www.zorro-trader.com/download.php) (linked from [Zorro download page](http://www.zorro-trader.com/download.php)) can create .t6 files 
 
 ## Forum links
-[standalone conversion](http://codereview.stackexchange.com/questions/38275/convert-between-date-time-and-time-stamp-without-using-standard-library-routines)
+[http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size](http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size)  
+[standalone conversion for epoch](http://codereview.stackexchange.com/questions/38275/convert-between-date-time-and-time-stamp-without-using-standard-library-routines)
 see also CRAN lubridate source
