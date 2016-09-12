@@ -39,7 +39,9 @@ USD/JPY,20160509 00:00:00.140,107.359001,107.366997
 ## Example conversion
 [ZHistoryEdit.exe](http://www.zorro-trader.com/download.php) (linked from [Zorro download page](http://www.zorro-trader.com/download.php)) can create .t6 files 
 
-## Forum links
+## Links
+[Recursively list directories in C](http://www.lemoda.net/c/recursive-directory/)  
+[Doubly-Linked List in C](http://www.lemoda.net/c/doubly-linked-list/index.html)  
 [http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size](http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size)  
 [standalone conversion for epoch](http://codereview.stackexchange.com/questions/38275/convert-between-date-time-and-time-stamp-without-using-standard-library-routines)
-see also CRAN lubridate source
+see also CRAN lubridate source; not used in this code

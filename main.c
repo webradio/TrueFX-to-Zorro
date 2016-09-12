@@ -38,7 +38,7 @@ double SystemTimeToVariantTimeMs(
 
 /* Flush one bar to output file                                             */
 /* The file should be already opened for write in binary mode               */
-void FlushBar(const bool wr, T6 *pBar, FILE *fw,
+void FlushBar(const int wr, T6 *pBar, FILE *fw,
     long int *pBarNum, long int *pNumTicks)
 {
     if (wr) {
@@ -54,11 +54,11 @@ void FlushBar(const bool wr, T6 *pBar, FILE *fw,
     //  Bar.time, Bar.fOpen, Bar.fHigh, Bar.fLow, Bar.fClose, Bar.fVal, Bar.fVol);
 }
 
-/* Parse ticks in the CSV file. If wr==false, count created bars and write  */
-/* to pBarNum. If wr==true, parse ticks and this time write bars to the     */
+/* Parse ticks in the CSV file. If wr==0, count created bars and write  */
+/* to pBarNum. If wr==1, parse ticks and this time write bars to the     */
 /* output file in reverse order, knowing total number from pBarNum          */
 /* Both input and output files should be already opened                     */
-void parsecsv(const bool wr, long int *pBarNum, FILE *fr, FILE *fw)
+void parsecsv(const int wr, long int *pBarNum, FILE *fr, FILE *fw)
 {
     char L[64];
     double T;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
     printf("TrueFX tick csv to Zorro bar t6 convertor\n");
     if(argc < 3) {
-        fprintf(stderr, "Usage : %s TRUEFX-CSV-INPUT ZORRO-T6-OUTPUT\n\
+        fprintf(stderr, "Usage : %s 1FX-CSV-INPUT ZORRO-T6-OUTPUT\n\
         E.g. %s EURUSD-2016-05.csv EURUSD-2016-t1000.t6\n", argv[0], argv[0]);
         return(-1);
     }
@@ -148,11 +148,11 @@ int main(int argc, char **argv)
 
     BarNum = 0;
     printf("Parsing %s ...\n", argv[1]);
-    parsecsv(/*wr*/false, &BarNum, fr, fw);
+    parsecsv(/*wr*/0, &BarNum, fr, fw);
     printf("    aggregates to %ld %d-tick bars\n", BarNum, NTICKS);
     rewind(fr);
     printf("Parsing %s again,\n    writing bars to %s ... ", argv[1], argv[2]);
-    parsecsv(/*wr*/true, &BarNum, fr, fw);
+    parsecsv(/*wr*/1, &BarNum, fr, fw);
     printf("done\n");
 
     fclose(fw);
