@@ -40,11 +40,35 @@ USD/JPY,20160509 00:00:00.140,107.359001,107.366997
 [ZHistoryEdit.exe](http://www.zorro-trader.com/download.php) (linked from [Zorro download page](http://www.zorro-trader.com/download.php)) can create .t6 files 
 
 ## Converting .zip to .gz
-.gz format is the one supported by zlib `stdio`-like functions `gzgets()` and others. TrueFX files are .zip. Here is a (Windows) command line to convert .zip to .gz  
+.gz format is the one supported by zlib `stdio`-like functions `gzgets()` and others. TrueFX files are .zip. 7zip is able to create .gz files calling it "gzip format". Here's an example code using zlib using stdio-like access, reading the first line from compressed file:
 
-    funzip.exe EURUSD-2016-06.zip | zpipe.exe > EURUSD-2016-06.csv.gz
+    #include "zlib/zlib.h"
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
 
-Note that 7zip can also create .gz files calling it "gzip format", but it appears to be not the same that zlib examples create and read. 
+    int main(int argc, char **argv)
+    {
+        const char *fname = "short.txt.gz";
+        gzFile fr;
+        Byte *uncompr;
+        uLong uncomprLen = 10000*sizeof(int);
+        uncompr  = (Byte*)calloc((uInt)uncomprLen, 1);
+        strcpy((char*)uncompr, "garbage");
+
+        fr = gzopen(fname, "rb");
+        if (fr == NULL) {
+            printf("gzopen error\n");
+            exit(1);
+        }
+        gzgets(fr, (char*)uncompr, (int)uncomprLen);
+        printf("uncompr==%s\n", uncompr);
+        gzclose(fr);
+
+        free(uncompr);
+        return(0);
+    } 
+    
 
 ## Links (which contributed to the code)
 [http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size](http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size)  
@@ -60,3 +84,9 @@ Note that 7zip can also create .gz files calling it "gzip format", but it appear
 [zlib, example of stdio-like gzopen() and **gzgets()**](https://github.com/madler/zlib/blob/master/test/example.c)  
 [standalone conversion for epoch](http://codereview.stackexchange.com/questions/38275/convert-between-date-time-and-time-stamp-without-using-standard-library-routines)
 see also CRAN lubridate source; not used in this code
+
+## Thrown away
+Here is a (Windows) command line to convert .zip to gzip **stream (not a valid .gz file)** and decompress again to check if it worked. Keep in mind that the magic two-bytes header {31, 139} is not present in this case, `gzgets()` simply returns bytes from the file in this case.
+
+    funzip.exe EURUSD-2016-06.zip | zpipe.exe > EURUSD-2016-06.csv.gz
+    cat EURUSD-2016-06.csv.gz | zpipe.exe -d | more
