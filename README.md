@@ -34,13 +34,18 @@ USD/JPY,20160506 20:59:59.203,**106.978996,107.273003**
 USD/JPY,20160506 20:59:59.437,**106.917999,107.488998**  
 USD/JPY,20160509 00:00:00.026,107.359001,107.366997  
 USD/JPY,20160509 00:00:00.140,107.359001,107.366997  
-![Zorro Chart Viewer with N-tick chart](./doc/img/PlotCurve_USDJPY.png)
+![Zorro Chart Viewer with N-tick chart](./doc/img/ PlotCurve_USDJPY.png)
 
 ## Example conversion
 [ZHistoryEdit.exe](http://www.zorro-trader.com/download.php) (linked from [Zorro download page](http://www.zorro-trader.com/download.php)) can create .t6 files 
 
 ## Converting .zip to .gz
-.gz format is the one supported by zlib `stdio`-like functions `gzgets()` and others. TrueFX files are .zip. 7zip is able to create .gz files calling it "gzip format". Here's an example code using zlib using stdio-like access, reading the first line from compressed file:
+.gz format is the one supported by zlib `stdio`-like functions `gzgets()` and others.  TrueFX files are .zip, however.  
+Here's how the conversion from .zip to .gz can be done without ever storing the infalted file on disk. _gzip_ is able to create .gz files from stdin, which is fed by _fUnZip_:
+
+    funzip.exe EURUSD-2016-06.zip | gzip -9 > EURUSD-2016-06.csv.gz
+
+Here's an example code using zlib using stdio-like access, reading the first line from .gz file:
 
     #include "zlib/zlib.h"
     #include <stdio.h>
@@ -71,19 +76,24 @@ USD/JPY,20160509 00:00:00.140,107.359001,107.366997
     
 
 ## Links (which contributed to the code)
+[fUnZip](http://www.info-zip.org/) for extracting .zip to stdout and [gzip](http://www.gzip.org/#exe) for making .gz from stdin  
 [http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size](http://stackoverflow.com/questions/7775027/how-to-create-file-of-x-size)  
 [Converting from year-month-day-... to microsoft VariantTime](https://doxygen.reactos.org/df/d85/variant_8c_source.html) - Reactos sources, they in turn borrowed from PostgreSQL  
 [how-is-variant-time-date-double-8-byte-handled on Stackoverflow]() - pointing to Reactos
 
 ## Links (just for info)
+[wget](http://gnuwin32.sourceforge.net/packages/wget.htm) for download, here is the [setup](http://downloads.sourceforge.net/gnuwin32/wget-1.11.4-1-setup.exe) for Windows and the [manual](http://www.gnu.org/software/wget/manual/wget.html#Recursive-Retrieval-Options)  
+There are also [curl]() and [aria2]() out there  
+[TrueFX download script](https://sites.google.com/site/truefxtickdatadownloader/) - fails  
 [Recursively list directories in C](http://www.lemoda.net/c/recursive-directory/)  
 [Doubly-Linked List in C](http://www.lemoda.net/c/doubly-linked-list/index.html)
 [How are zlib, gzip and zip related](http://stackoverflow.com/questions/20762094/how-are-zlib-gzip-and-zip-related-what-do-they-have-in-common-and-how-are-they)  
-[zlib cannot handle zip](http://www.zlib.net/zlib_faq.html#faq11), see contrib/minizip for wrapper or see [Mark Adler's sunzip](https://github.com/madler/sunzip)   
-[fUnZip at Info-ZIP.org](http://www.info-zip.org/) - for extracting into pipe
+[zlib cannot handle zip](http://www.zlib.net/zlib_faq.html#faq11), see contrib/minizip for wrapper or see [Mark Adler's sunzip](https://github.com/madler/sunzip) or [winimage.com/zLibDll](http://www.winimage.com/zLibDll/minizip.html)  
 [zlib, example of stdio-like gzopen() and **gzgets()**](https://github.com/madler/zlib/blob/master/test/example.c)  
 [standalone conversion for epoch](http://codereview.stackexchange.com/questions/38275/convert-between-date-time-and-time-stamp-without-using-standard-library-routines)
-see also CRAN lubridate source; not used in this code
+see also CRAN lubridate source; not used in this code  
+[Mathias Svensson TimeConverion GUI](http://result42.com/projects/TimeConversion)
+
 
 ## Thrown away
 Here is a (Windows) command line to convert .zip to gzip **stream (not a valid .gz file)** and decompress again to check if it worked. Keep in mind that the magic two-bytes header {31, 139} is not present in this case, `gzgets()` simply returns bytes from the file in this case.
